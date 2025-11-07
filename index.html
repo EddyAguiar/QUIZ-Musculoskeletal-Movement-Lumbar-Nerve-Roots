@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Musculoskeletal Master Quiz</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root{
+      --bg:#f7fbff; --card:#fff; --accent:#0f766e; --accent-2:#34d399;
+      --muted:#6b7280; --success:#16a34a; --danger:#ef4444; --shadow:0 12px 34px rgba(17,24,39,0.06);
+      --maxw:1000px;
+    }
+    *{box-sizing:border-box}
+    body{font-family:Inter, "Segoe UI", Roboto, Arial, sans-serif;margin:0;background:var(--bg);color:#071124;display:flex;justify-content:center;padding:22px}
+    .wrap{width:100%;max-width:var(--maxw)}
+    header{background:var(--card);padding:18px;border-radius:12px;box-shadow:var(--shadow);border-left:8px solid var(--accent);margin-bottom:14px}
+    header h1{margin:0;font-size:1.15rem}
+    header p{margin:6px 0 0;color:var(--muted)}
+    .video-wrap{background:var(--card);padding:12px;border-radius:12px;box-shadow:var(--shadow);margin-bottom:14px}
+    .video-wrap iframe{width:100%;height:320px;border-radius:10px;border:0}
+    .quiz{background:var(--card);padding:16px;border-radius:12px;box-shadow:var(--shadow);margin-bottom:14px}
+    .top-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .pill{background:rgba(52,211,153,0.08);padding:8px 12px;border-radius:999px;color:var(--accent);font-weight:800}
+    .progress-outer{background:#ecfdf5;border-radius:8px;height:12px;overflow:hidden;flex:1;margin-left:12px}
+    .progress{height:100%;width:0;background:linear-gradient(90deg,var(--accent-2),var(--accent));transition:width .4s}
+    .question{margin-top:14px;background:#fbfffd;padding:12px;border-left:5px solid var(--accent-2);border-radius:10px}
+    .options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+    .opt{padding:12px;border-radius:10px;border:1px solid #eafaf5;background:#fff;cursor:pointer;display:flex;gap:10px;align-items:center}
+    .opt:hover{box-shadow:0 8px 18px rgba(52,211,153,0.06)}
+    .opt.selected{outline:3px solid rgba(52,211,153,0.12)}
+    .opt.correct{border-color:var(--success);background:rgba(16,185,129,0.06)}
+    .opt.incorrect{border-color:var(--danger);background:rgba(239,68,68,0.06)}
+    .feedback{display:none;margin-top:12px;padding:12px;border-radius:8px;background:#fbfffd;border-left:4px solid var(--accent-2)}
+    .feedback.show{display:block}
+    .feedback .trans { margin-top:8px; color:var(--muted); font-size:0.95rem; }
+    .buttons{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+    .btn{padding:10px 14px;border-radius:10px;border:0;cursor:pointer;background:linear-gradient(135deg,var(--accent-2),var(--accent));color:#fff;font-weight:800}
+    .btn.secondary{background:#fff;color:var(--accent);border:1px solid #e6f8f2}
+    .dropdown{background:var(--card);padding:12px;border-radius:12px;box-shadow:var(--shadow);margin-bottom:10px;border-left:6px solid var(--accent-2)}
+    .dropdown-toggle{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:10px;border:1px solid #eefbf7;background:#fff;cursor:pointer}
+    .dropdown-content{max-height:0;overflow:hidden;transition:max-height .36s ease,padding .28s}
+    .dropdown-content.open{max-height:1000px;padding-top:12px}
+    footer{margin-top:14px;text-align:center;color:var(--muted)}
+    audio { width:100%; margin-top:10px; display:block; }
+    @media(max-width:720px){ .options{grid-template-columns:1fr} .video-wrap iframe{height:200px} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Musculoskeletal Master Quiz</h1>
+      <p>22 questões • Músculos, tendões, ligamentos e como quiropráticos ajudam no alinhamento e disfunções. Clique em uma opção para ver o feedback (EN/PT).</p>
+    </header>
+
+    <div class="video-wrap" id="videoWrap">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-weight:800;color:var(--accent)"><i class="fas fa-play-circle"></i> Lesson Video</div>
+        <div>
+          <button id="toggleVideoBtn" class="btn secondary" style="padding:6px 10px">🎬 Hide Video</button>
+        </div>
+      </div>
+      <div id="videoContainer">
+        <!-- Placeholder video: replace with your preferred chiropractic/anatomy video -->
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/QkprtG-rYPc?si=n8iqjVpJcFfY_fhA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+      </div>
+    </div>
+
+    <div class="dropdown">
+      <div class="dropdown-toggle" id="qtToggle">
+        <div>
+          <strong>Quick Theory & Quick Vocab (EN / PT) — Basics</strong>
+          <div style="color:var(--muted);font-size:0.9rem">Short notes: roles of muscles, tendons, ligaments + chiropractic aims.</div>
+        </div>
+        <div style="color:var(--muted)"><i id="qtArrow" class="fas fa-chevron-right"></i></div>
+      </div>
+      <div id="qtContent" class="dropdown-content" aria-hidden="true">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div style="background:#fbfffd;padding:10px;border-radius:8px;border:1px solid #ecfdf5">
+            <strong>Muscle / Músculo</strong><br><em>EN:</em> Contractile tissue that generates force to move bones.<br><em>PT:</em> Tecido contrátil que gera força para mover ossos.
+          </div>
+          <div style="background:#fbfffd;padding:10px;border-radius:8px;border:1px solid #ecfdf5">
+            <strong>Tendon / Tendão</strong><br><em>EN:</em> Connects muscle to bone; transmits force.<br><em>PT:</em> Conecta músculo ao osso; transmite força.
+          </div>
+          <div style="background:#fbfffd;padding:10px;border-radius:8px;border:1px solid #ecfdf5">
+            <strong>Ligament / Ligamento</strong><br><em>EN:</em> Connects bone to bone; stabilizes joints.<br><em>PT:</em> Conecta osso a osso; estabiliza articulações.
+          </div>
+          <div style="background:#fbfffd;padding:10px;border-radius:8px;border:1px solid #ecfdf5">
+            <strong>Chiropractic / Quiropraxia</strong><br><em>EN:</em> Manual techniques to improve joint alignment, reduce nerve irritation, and restore function.<br><em>PT:</em> Técnicas manuais para melhorar alinhamento articular, reduzir irritação nervosa e restaurar função.
+          </div>
+          <div style="background:#fbfffd;padding:10px;border-radius:8px;border:1px solid #ecfdf5">
+            <strong>Strain vs Sprain</strong><br><em>EN:</em> Strain = muscle/tendon injury; Sprain = ligament injury.<br><em>PT:</em> Distensão = músculo/tendão; Entorse = ligamento.
+          </div>
+          <div style="background:#fbfffd;padding:10px;border-radius:8px;border:1px solid #ecfdf5">
+            <strong>Posture & Alignment</strong><br><em>EN:</em> Proper alignment reduces abnormal load and dysfunction.<br><em>PT:</em> Alinhamento correto reduz carga anormal e disfunção.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="quiz" id="quiz">
+      <div class="top-row">
+        <div class="pill">Question <span id="qIndex">1</span> / <span id="qTotal">22</span></div>
+        <div style="display:flex;align-items:center;gap:10px;flex:1">
+          <div class="pill" style="background:transparent;color:var(--muted);font-weight:600">Score: <span id="score">0</span></div>
+          <div class="progress-outer" aria-hidden="true"><div id="progressBar" class="progress"></div></div>
+        </div>
+      </div>
+
+      <div id="questionBox" class="question" aria-live="polite">Carregando...</div>
+
+      <audio id="ttsAudio" controls style="display:none"></audio>
+
+      <div id="options" class="options" role="list"></div>
+
+      <div id="feedback" class="feedback" aria-live="polite">
+        <div id="correctText" style="font-weight:800;margin-bottom:6px"></div>
+        <div id="explainText" style="color:var(--muted)"></div>
+        <div class="trans" id="altTranslations"></div>
+      </div>
+
+      <div class="buttons">
+        <button id="nextBtn" class="btn" disabled>Next</button>
+      </div>
+    </div>
+
+    <footer>
+      Material criado para estudo — © InglêsFácilGratuito
+    </footer>
+  </div>
+
+  <script>
+    const toggleVideoBtn = document.getElementById('toggleVideoBtn');
+    const videoContainer = document.getElementById('videoContainer');
+    let videoVisible = true;
+    toggleVideoBtn.addEventListener('click', () => {
+      videoVisible = !videoVisible;
+      videoContainer.style.display = videoVisible ? 'block' : 'none';
+      toggleVideoBtn.textContent = videoVisible ? '🎬 Hide Video' : '🎬 Show Video';
+    });
+
+    const qtToggle = document.getElementById('qtToggle');
+    const qtContent = document.getElementById('qtContent');
+    const qtArrow = document.getElementById('qtArrow');
+    let qtOpen = false;
+    qtToggle.addEventListener('click', () => {
+      qtOpen = !qtOpen;
+      qtContent.classList.toggle('open', qtOpen);
+      qtContent.setAttribute('aria-hidden', (!qtOpen).toString());
+      qtArrow.style.transform = qtOpen ? 'rotate(90deg)' : 'rotate(0deg)';
+    });
+
+    const questions = [
+      { q: "Which structure connects muscle to bone and transmits force?",
+        options:["<strong>Tendon</strong>", "<strong>Ligament</strong>", "<strong>Cartilage</strong>", "<strong>Fascia</strong>"],
+        options_pt:["Tendão — conecta músculo ao osso.", "Ligamento — conecta osso a osso.", "Cartilagem — tecido articular.", "Fáscia — tecido conjuntivo envolvendo músculos."],
+        a:0,
+        sentence:"Tendon connects muscle to bone.",
+        reason_pt:"Tendons attach muscle to bone and transmit the force of contraction." },
+
+      { q: "Which tissue primarily stabilizes joints by connecting bone to bone?",
+        options:["<strong>Ligament</strong>", "<strong>Tendon</strong>", "<strong>Muscle</strong>", "<strong>Nerve</strong>"],
+        options_pt:["Ligamento — estabiliza articulações.", "Tendão — conecta músculo ao osso.", "Músculo — gera força.", "Nervo — transmite sinais."],
+        a:0,
+        sentence:"Ligaments connect bones and stabilize joints.",
+        reason_pt:"Ligaments are fibrous bands that hold bones together at joints, preventing excess movement." },
+
+      { q: "Which best describes a muscle's main function?",
+        options:["<strong>Produce force and movement</strong>", "<strong>Transmit signals</strong>", "<strong>Provide structural support like bone</strong>", "<strong>Store calcium</strong>"],
+        options_pt:["Produzir força e movimento.", "Transmitir sinais — função nervosa.", "Suporte estrutural — papel dos ossos.", "Armazenar cálcio — função do osso."],
+        a:0,
+        sentence:"Muscles produce force and movement.",
+        reason_pt:"Skeletal muscles contract to generate movement by pulling on bones via tendons." },
+
+      { q: "A sprain is an injury to which structure?",
+        options:["<strong>Ligament</strong>", "<strong>Tendon</strong>", "<strong>Muscle</strong>", "<strong>Bone</strong>"],
+        options_pt:["Entorse = lesão de ligamento.", "Distensão = lesão de tendão/músculo.", "Distensão = músculo/tendão.", "Fratura = osso."],
+        a:0,
+        sentence:"A sprain involves a ligament.",
+        reason_pt:"Sprains are stretches or tears of ligaments caused by overstretching a joint." },
+
+      { q: "Which is a common sign of a tendon injury (tendinopathy)?",
+        options:["<strong>Pain during movement and localized tenderness</strong>", "<strong>Joint instability similar to ligament rupture</strong>", "<strong>Sharp bone pain at rest</strong>", "<strong>Loss of skin sensation over the area</strong>"],
+        options_pt:["Dor ao mover e sensibilidade localizada — sinais de tendinopatia.", "Instabilidade articular — mais ligada a ligamentos.", "Dor óssea — menos característica de tendões.", "Perda sensorial — função nervosa."],
+        a:0,
+        sentence:"Tendinopathy causes pain and tenderness around the tendon.",
+        reason_pt:"Tendon overuse or degeneration typically causes pain during activity and point tenderness." },
+
+      { q: "Which action primarily shortens a skeletal muscle?",
+        options:["<strong>Contraction</strong>", "<strong>Stretching</strong>", "<strong>Relaxation</strong>", "<strong>Extension</strong>"],
+        options_pt:["Contração — encurta o músculo.", "Alongamento — estende o músculo.", "Relaxamento — volta ao comprimento de repouso.", "Extensão — movimento, não ação do músculo em si."],
+        a:0,
+        sentence:"Muscle contraction shortens the muscle.",
+        reason_pt:"Contraction pulls on tendons and bones producing joint movement." },
+
+      { q: "Which structure is most responsible for absorbing shock in a joint?",
+        options:["<strong>Cartilage</strong>", "<strong>Tendon</strong>", "<strong>Ligament</strong>", "<strong>Muscle</strong>"],
+        options_pt:["Cartilagem — amortecimento entre ossos.", "Tendão — transmite força.", "Ligamento — estabiliza.", "Músculo — gera movimento."],
+        a:0,
+        sentence:"Cartilage absorbs shock in joints.",
+        reason_pt:"Articular cartilage cushions bone ends and distributes load across the joint." },
+
+      { q: "Which describes how chiropractors commonly help patients?",
+        options:["<strong>Use manual adjustments to improve joint alignment and reduce nerve irritation</strong>", "<strong>Perform surgery to repair tendons</strong>", "<strong>Prescribe antibiotics for musculoskeletal pain</strong>", "<strong>Replace ligaments with grafts</strong>"],
+        options_pt:["Ajustes manuais para melhorar alinhamento e reduzir irritação nervosa.", "Cirurgia de reparo — não prática típica de quiropráticos.", "Antibióticos — tratamento infeccioso, não para dor mecânica.", "Substituição de ligamentos — procedimento cirúrgico especializado."],
+        a:0,
+        sentence:"Chiropractors use manual adjustments to improve alignment.",
+        reason_pt:"Chiropractic care focuses on manual therapy to restore joint function, reduce mechanical stress, and alleviate nerve-related symptoms." },
+
+      { q: "Which term best fits: 'the point where a tendon attaches to bone'?",
+        options:["<strong>Enthesis</strong>", "<strong>Periosteum</strong>", "<strong>Meniscus</strong>", "<strong>Synovium</strong>"],
+        options_pt:["Êntese — junção tendão-osso.", "Periósteo — camada do osso.", "Menisco — fibrocartilagem articular (joelho).", "Sínovia — membrana articular."],
+        a:0,
+        sentence:"The enthesis is where tendon attaches to bone.",
+        reason_pt:"Enthesis (êntese) é o ponto de inserção de tendões e ligamentos no osso." },
+
+      { q: "Which rehabilitation focus helps restore normal muscle length and function after injury?",
+        options:["<strong>Progressive loading and range-of-motion exercises</strong>", "<strong>Only rest and immobilization indefinitely</strong>", "<strong>Immediate high-intensity training</strong>", "<strong>Ignoring pain and returning to sport</strong>"],
+        options_pt:["Carga progressiva e exercícios de amplitude — reabilitação adequada.", "Repouso indefinido — pode causar perda de função.", "Treino intenso imediato — risco de re-lesão.", "Ignorar dor — perigoso."],
+        a:0,
+        sentence:"Rehabilitation uses progressive loading to restore function.",
+        reason_pt:"Controlled loading and mobility exercises help tendons and muscles recover strength and length." },
+
+      { q: "Which is a common effect of poor posture over time?",
+        options:["<strong>Muscle imbalances and joint stress</strong>", "<strong>Immediate bone fracture</strong>", "<strong>Instant ligament regeneration</strong>", "<strong>Improved tendon elasticity</strong>"],
+        options_pt:["Desbalanços musculares e estresse articular — efeito crônico de má postura.", "Fratura imediata — não relacionado a postura normal.", "Regeneração instantânea — incorreto.", "Elasticidade melhorada — improvável com má postura."],
+        a:0,
+        sentence:"Poor posture leads to muscle imbalances and joint stress.",
+        reason_pt:"Chronic poor alignment changes load distribution, causing overuse and dysfunction." },
+
+      { q: "Which structure contains motor endplates where nerves stimulate muscle fibers?",
+        options:["<strong>Neuromuscular junction</strong>", "<strong>Myotendinous junction</strong>", "<strong>Perimysium</strong>", "<strong>Epimysium</strong>"],
+        options_pt:["Junção neuromuscular — onde o nervo ativa fibras musculares.", "Junção mio-tendínea — onde músculo encontra tendão.", "Perimísio — envolve fascículos musculares.", "Epimísio — envolve o músculo inteiro."],
+        a:0,
+        sentence:"The neuromuscular junction is where nerves stimulate muscle fibers.",
+        reason_pt:"Motor neurons release neurotransmitters at the neuromuscular junction to trigger contraction." },
+
+      { q: "Which condition is characterized by inflammation of a bursa (bursitis)?",
+        options:["<strong>Pain and swelling near a joint</strong>", "<strong>Loss of bone density</strong>", "<strong>Systemic infection with fever</strong>", "<strong>Neurological numbness only</strong>"],
+        options_pt:["Dor e inchaço perto da articulação — bursite típica.", "Perda de densidade óssea — osteoporose.", "Infecção sistêmica — diferente.", "Dormência neurológica — pode coexistir, mas não define bursite."],
+        a:0,
+        sentence:"Bursitis causes pain and swelling near a joint.",
+        reason_pt:"Bursae cushion tissues; inflammation causes localized pain and reduced movement." },
+
+      { q: "Which is true about eccentric muscle contraction?",
+        options:["<strong>The muscle lengthens while under tension</strong>", "<strong>The muscle shortens under tension</strong>", "<strong>The muscle does not change length</strong>", "<strong>The muscle only relaxes passively</strong>"],
+        options_pt:["Contração excêntrica = alongamento sob carga.", "Contração concêntrica = encurtamento.", "Isométrica = sem mudança de comprimento.", "Relaxamento passivo = sem contração ativa."],
+        a:0,
+        sentence:"Eccentric contraction lengthens the muscle under tension.",
+        reason_pt:"Eccentric work controls movement and can produce high mechanical load on tendons." },
+
+      { q: "Which professional technique is most likely NOT part of standard chiropractic care?",
+        options:["<strong>Open-heart surgery</strong>", "<strong>Spinal manipulation</strong>", "<strong>Soft tissue mobilization</strong>", "<strong>Rehabilitation exercises</strong>"],
+        options_pt:["Cirurgia cardíaca — procedimento médico, não quiroprático.", "Manipulação espinhal — técnica quiroprática comum.", "Mobilização de tecido mole — frequentemente usada.", "Exercícios de reabilitação — parte complementar do tratamento."],
+        a:0,
+        sentence:"Open-heart surgery is not part of chiropractic care.",
+        reason_pt:"Chiropractors use conservative/manual methods; major surgery is performed by surgeons." },
+
+      { q: "Which describes 'overuse injury' to tendons?",
+        options:["<strong>Gradual pain from repetitive loading</strong>", "<strong>Immediate rupture from a single traumatic event</strong>", "<strong>Autoimmune destruction of tendon tissue</strong>", "<strong>Fungal infection of tendon sheath</strong>"],
+        options_pt:["Dor gradual por uso repetitivo — tendinopatia típica.", "Ruptura imediata — lesão aguda distinta.", "Destruição autoimune — raro para tendões comuns.", "Infecção fúngica — incomum."],
+        a:0,
+        sentence:"Overuse injuries cause gradual pain from repetitive loading.",
+        reason_pt:"Repetitive microtrauma and poor recovery lead to tendinopathy over time." },
+
+      { q: "Which is the best immediate first-aid step for a suspected muscle strain?",
+        options:["<strong>Rest, ice, compression, and elevation (RICE)</strong>", "<strong>Immediate aggressive stretching</strong>", "<strong>Return to full activity</strong>", "<strong>Take antibiotics</strong>"],
+        options_pt:["RICE — abordagem inicial para lesões agudas musculares.", "Alongamento agressivo — pode piorar a lesão.", "Voltar às atividades — arriscado sem avaliação.", "Antibióticos — apenas para infecções bacterianas."],
+        a:0,
+        sentence:"Use RICE for acute muscle strain first aid.",
+        reason_pt:"Rest and controlled measures reduce swelling and pain acutely; rehabilitation follows." },
+
+      { q: "Which statement about ligaments is TRUE?",
+        options:["<strong>They have limited blood supply and heal slowly</strong>", "<strong>They actively contract like muscles</strong>", "<strong>They generate electrical impulses</strong>", "<strong>They are composed mainly of cartilage</strong>"],
+        options_pt:["Baixa vascularização — cura lenta é comum para ligamentos.", "Não contraem — não são músculo.", "Não geram impulsos elétricos — função nervosa.", "Não são principalmente cartilaginosos."],
+        a:0,
+        sentence:"Ligaments have limited blood supply and heal slowly.",
+        reason_pt:"Poor vascularization explains protracted healing times for ligament injuries." },
+
+      { q: "Which best explains why chiropractors may reduce pain in patients?",
+        options:["<strong>By restoring joint motion, reducing nerve irritation, and improving biomechanics</strong>", "<strong>By prescribing high doses of opioids</strong>", "<strong>By performing bone grafts</strong>", "<strong>By injecting antibiotics into joints</strong>"],
+        options_pt:["Restaurando movimento, reduzindo irritação nervosa e melhorando biomecânica.", "Opioides não fazem parte do tratamento quiroprático típico.", "Enxertos ósseos — cirurgia, não quiropraxia.", "Injeção de antibióticos — apenas para infecções específicas."],
+        a:0,
+        sentence:"Chiropractic care restores joint motion and improves biomechanics.",
+        reason_pt:"Manual therapy and rehabilitation can reduce mechanical pain and improve function." },
+
+      { q: "Which test assesses range of motion and joint mobility commonly in clinics?",
+        options:["<strong>Physical examination and movement tests</strong>", "<strong>Blood glucose test</strong>", "<strong>Vision acuity chart</strong>", "<strong>Hearing test</strong>"],
+        options_pt:["Exame físico e testes de movimento — avaliam mobilidade articular.", "Glicemia — não relacionada a mobilidade articular diretamente.", "Acuidade visual — avaliação ocular.", "Audição — não relacionada."],
+        a:0,
+        sentence:"Physical exam and movement tests assess joint mobility.",
+        reason_pt:"Clinicians use observation, palpation, and active/passive movement tests to evaluate joints." },
+
+      { q: "Which phrase describes 'isometric exercise'?",
+        options:["<strong>Muscle contracts without changing length</strong>", "<strong>Muscle lengthens while contracting</strong>", "<strong>Muscle shortens while contracting</strong>", "<strong>Muscle is surgically repaired</strong>"],
+        options_pt:["Isométrico = contração sem mudança de comprimento.", "Excêntrico = alongamento sob tensão.", "Concêntrico = encurtamento.", "Reparação cirúrgica — diferente."],
+        a:0,
+        sentence:"Isometric contraction occurs without length change.",
+        reason_pt:"Isometric holds build stability and can be used early in rehab when movement is painful." },
+
+      { q: "Which is an example of a protective reflex that involves muscles?",
+        options:["<strong>Stretch reflex (muscle spindle) causing contraction</strong>", "<strong>Ligament reflex causing bone growth</strong>", "<strong>Tendon becoming a nerve</strong>", "<strong>Cartilage initiating muscle spasms</strong>"],
+        options_pt:["Reflexo de estiramento = resposta protetora de contração.", "Ligamento não gera esse reflexo direto.", "Tendão não se transforma em nervo.", "Cartilagem não inicia espasmos musculares."],
+        a:0,
+        sentence:"The stretch reflex causes muscle contraction to protect against overstretch.",
+        reason_pt:"Muscle spindles detect stretch and trigger a reflexive contraction to protect the muscle." },
+
+      { q: "Which is true regarding chronic ligament instability if left untreated?",
+        options:["<strong>It can lead to recurrent sprains and joint degeneration</strong>", "<strong>It always heals perfectly without intervention</strong>", "<strong>It converts ligaments into muscle tissue</strong>", "<strong>It prevents any movement permanently</strong>"],
+        options_pt:["Instabilidade crônica causa entorses recorrentes e possível degeneração articular.", "Nem sempre cicatriza bem sem tratamento.", "Ligamento não vira músculo.", "Não necessariamente impede todo movimento."],
+        a:0,
+        sentence:"Chronic instability can lead to recurrent sprains and degeneration.",
+        reason_pt:"Ongoing instability alters joint loading and accelerates degenerative changes." },
+
+      { q: "Which modality might a chiropractor combine with adjustments to aid recovery?",
+        options:["<strong>Exercise prescription and soft-tissue therapy</strong>", "<strong>High-dose chemotherapy</strong>", "<strong>Liver transplant</strong>", "<strong>Open-heart bypass</strong>"],
+        options_pt:["Exercícios prescritos e terapia de tecido mole — abordagem combinada.", "Quimioterapia — tratamento oncológico.", "Transplante hepático — cirurgia complexa.", "Cirurgia cardíaca — não quiroprática."],
+        a:0,
+        sentence:"Chiropractors often combine exercises and soft-tissue work with adjustments.",
+        reason_pt:"Multimodal care (manual therapy + rehab) yields better functional outcomes." },
+
+      { q: "Which describes a 'rotator cuff' injury?",
+        options:["<strong>Tear or inflammation of shoulder tendons</strong>", "<strong>Fracture of the collarbone</strong>", "<strong>Compression of the spinal cord</strong>", "<strong>Infection of the shoulder skin</strong>"],
+        options_pt:["Lesão dos tendões do ombro — rotator cuff.", "Fratura da clavícula — diferente.", "Compressão medular — séria, diferente.", "Infecção cutânea — outra condição."],
+        a:0,
+        sentence:"Rotator cuff injuries affect shoulder tendons.",
+        reason_pt:"The rotator cuff stabilizes the shoulder; tendinopathy or tears cause pain and weakness." },
+
+      { q: "Which best practice reduces the risk of tendon injury?",
+        options:["<strong>Gradual load progression and adequate recovery</strong>", "<strong>Sudden increase in training volume</strong>", "<strong>Complete avoidance of exercise forever</strong>", "<strong>Ignoring pain signals</strong>"],
+        options_pt:["Progressão gradual e recuperação adequada — prevenção eficaz.", "Aumento súbito — fator de risco.", "Evitar exercício — pode causar fraqueza e piora.", "Ignorar dor — perigoso."],
+        a:0,
+        sentence:"Gradual loading and recovery reduce tendon injury risk.",
+        reason_pt:"Tendons adapt slowly to load; progressive training with rest minimizes overload." }
+    ];
+
+    const qIndex = document.getElementById('qIndex');
+    const qTotal = document.getElementById('qTotal');
+    const questionBox = document.getElementById('questionBox');
+    const optionsBox = document.getElementById('options');
+    const feedbackBox = document.getElementById('feedback');
+    const correctText = document.getElementById('correctText');
+    const explainText = document.getElementById('explainText');
+    const altTranslations = document.getElementById('altTranslations');
+    const nextBtn = document.getElementById('nextBtn');
+    const scoreEl = document.getElementById('score');
+    const progressBar = document.getElementById('progressBar');
+    const ttsAudio = document.getElementById('ttsAudio');
+
+    let idx = 0;
+    let score = 0;
+    let answered = false;
+
+    qTotal.textContent = questions.length;
+
+    function loadQuestion(i){
+      const item = questions[i];
+      qIndex.textContent = i+1;
+      questionBox.innerHTML = item.q;
+      optionsBox.innerHTML = '';
+      feedbackBox.classList.remove('show');
+      correctText.innerHTML = '';
+      explainText.innerHTML = '';
+      altTranslations.innerHTML = '';
+      nextBtn.disabled = true;
+      answered = false;
+
+      item.options.forEach((opt, k) => {
+        const div = document.createElement('div');
+        div.className = 'opt';
+        div.tabIndex = 0;
+        div.innerHTML = `<div style="font-weight:800;color:var(--accent);width:30px">${String.fromCharCode(65+k)}</div><div>${opt}</div>`;
+        div.addEventListener('click', () => handleSelect(k, div));
+        div.addEventListener('keydown', (e) => { if(e.key==='Enter' || e.key===' ') handleSelect(k, div); });
+        optionsBox.appendChild(div);
+      });
+
+      progressBar.style.width = (idx / questions.length * 100) + '%';
+
+      if(item.sentence && item.sentence.trim().length > 0){
+        ttsAudio.style.display = 'block';
+        ttsAudio.src = `https://api.streamelements.com/kappa/v2/speech?voice=Brian&text=${encodeURIComponent(item.sentence)}`;
+      } else {
+        ttsAudio.style.display = 'none';
+        ttsAudio.src = '';
+      }
+    }
+
+    function handleSelect(choice, node){
+      if(answered) return;
+      answered = true;
+      const item = questions[idx];
+      const optNodes = Array.from(document.querySelectorAll('.opt'));
+
+      const transHtml = '<strong>Traduções das alternativas (PT):</strong><br>' + item.options_pt.map((t, i) => `<div style="margin-top:6px"><strong>${String.fromCharCode(65+i)}.</strong> ${t}</div>`).join('');
+      altTranslations.innerHTML = transHtml;
+
+      feedbackBox.classList.add('show');
+      const correctOpt = item.options[item.a];
+      correctText.innerHTML = `Correct answer: ${correctOpt}`;
+      explainText.innerHTML = item.reason_pt;
+
+      if(choice === item.a){
+        node.classList.add('correct');
+        score++;
+        scoreEl.textContent = score;
+      } else {
+        node.classList.add('incorrect');
+        optNodes.forEach(n => {
+          if(n.textContent.trim().includes(stripHtml(correctOpt))) n.classList.add('correct');
+        });
+      }
+
+      optNodes.forEach(n => {
+        n.classList.add('disabled');
+        n.style.pointerEvents = 'none';
+      });
+
+      nextBtn.disabled = false;
+    }
+
+    function stripHtml(html){
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      return tmp.textContent || tmp.innerText || '';
+    }
+
+    nextBtn.addEventListener('click', () => {
+      if(idx < questions.length - 1){
+        idx++;
+        loadQuestion(idx);
+      } else {
+        showResults();
+      }
+    });
+
+    function showResults(){
+      document.getElementById('quiz').innerHTML = `
+        <div style="padding:20px;background:var(--card);border-radius:12px;box-shadow:var(--shadow)">
+          <h2 style="margin:0 0 8px 0">Quiz completed!</h2>
+          <p style="margin:0 0 12px 0;font-weight:800;color:var(--accent)">Score: ${score} / ${questions.length} (${Math.round(score/questions.length*100)}%)</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn" id="reviewBtn">Review answers</button>
+            <button class="btn secondary" id="restartBtn">Restart</button>
+          </div>
+          <div style="margin-top:12px;color:var(--muted)">Use Review to ver cada questão, sua resposta e a explicação.</div>
+        </div>
+      `;
+      document.getElementById('restartBtn').addEventListener('click', () => location.reload());
+      document.getElementById('reviewBtn').addEventListener('click', showReview);
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    function showReview(){
+      const wrap = document.querySelector('.wrap');
+      const review = document.createElement('div');
+      review.style.marginTop = '12px';
+      review.style.background = 'var(--card)';
+      review.style.padding = '12px';
+      review.style.borderRadius = '12px';
+      review.style.boxShadow = 'var(--shadow)';
+      let html = '<h3 style="margin-top:0">Review — All Questions</h3>';
+      questions.forEach((q, i) => {
+        html += `<div style="padding:10px;border-radius:8px;border:1px solid #ecfdf5;margin-top:8px;background:#fbfffd">
+          <strong>Q${i+1}:</strong> ${q.q}
+          <div style="margin-top:6px"><strong>Options:</strong> ${q.options.map((op,idx)=> `<div style="margin-top:4px"><strong>${String.fromCharCode(65+idx)}.</strong> ${op} — <em>${q.options_pt[idx]}</em></div>`).join('')}</div>
+          <div style="margin-top:6px"><strong>Correct:</strong> ${q.options[q.a]}</div>
+          <div style="margin-top:6px;color:var(--muted)"><em>${q.reason_pt}</em></div>
+        </div>`;
+      });
+      review.innerHTML = html;
+      wrap.appendChild(review);
+      window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' && !nextBtn.disabled) nextBtn.click();
+      if(e.key === ' ' && document.activeElement && document.activeElement.classList.contains('opt')) {
+        e.preventDefault();
+        document.activeElement.click();
+      }
+    });
+
+    loadQuestion(idx);
+  </script>
+</body>
+</html>
